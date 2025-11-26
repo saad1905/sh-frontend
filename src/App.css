@@ -13,6 +13,8 @@
   }
 }
 
+
+
 .App-header {
   background-color: #282c34;
   min-height: 100vh;
@@ -28,11 +30,55 @@
   color: #61dafb;
 }
 
+body {
+  margin: 0;
+  padding: 0;
+}
+
+/* 🟢 Espace sous le navbar */
+.main-content {
+  padding-top: 80px; /* Ajuste selon la hauteur de ton navbar */
+}
+
+body {
+  background-color: #f4f4f4;
+  color: #0b2e14;
+  font-family: "Poppins", sans-serif;
+  padding-top: 80px;
+}
+
+.btn-primary {
+  background-color: #0b2e14 !important;
+  border-color: #0b2e14 !important;
+}
+
+.btn-primary:hover {
+  background-color: #11451d !important;
+}
+
+input:focus,
+button:focus {
+  outline: none !important;
+  box-shadow: 0 0 0 0.2rem rgba(11, 46, 20, 0.25);
+}
+
+
 @keyframes App-logo-spin {
   from {
     transform: rotate(0deg);
   }
   to {
     transform: rotate(360deg);
+  }
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(-10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
   }
 }
