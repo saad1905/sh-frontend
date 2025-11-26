@@ -1,7 +1,7 @@
 import axios from "axios";
 
 const api = axios.create({
-  baseURL: "http://127.0.0.1:8000/api",
+  baseURL: "https://sh-backend-3.onrender.com/api",
   withCredentials: true,
   // ⛔️ ne mets pas Content-Type ici !
   headers: { Accept: "application/json" },
