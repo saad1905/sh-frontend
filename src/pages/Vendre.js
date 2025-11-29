@@ -1,5 +1,7 @@
 import React, { useState } from "react";
 import api from "../api/axiosConfig";
+import { PuffLoader } from "react-spinners";
+
 
 function SellItem() {
   const [formData, setFormData] = useState({
@@ -14,6 +16,8 @@ function SellItem() {
   const [message, setMessage] = useState("");
   const [error, setError] = useState("");
   const [previews, setPreviews] = useState([]);
+  const [loading, setLoading] = useState(false);
+
 
   const handleChange = (e) => {
     const { name, value } = e.target;
@@ -27,9 +31,12 @@ function SellItem() {
   };
 
   const handleSubmit = async (e) => {
+    
     e.preventDefault();
     setMessage("");
     setError("");
+    setLoading(true); // ⬅️ Start loader
+
 
     try {
       // Lire l'utilisateur depuis le cookie
@@ -38,6 +45,8 @@ function SellItem() {
 
       if (!userData || !userData.email) {
         alert("⚠️ Vous devez être connecté pour vendre un meuble.");
+        setLoading(false);
+
         return;
       }
 
@@ -83,8 +92,19 @@ function SellItem() {
           ? `❌ ${JSON.stringify(err.response.data)}`
           : "❌ Erreur lors de l’ajout du meuble.";
       setError(msg);
+    }finally {
+      setLoading(false); // ⬅️ Stop loader
     }
   };
+  if (loading)
+    return (
+      <div className="text-center mt-5">
+        <PuffLoader size={70} color="#0b2e14" />
+        <p className="mt-3 fw-bold" style={{ color: "#0b2e14" }}>
+          Publication du meuble en cours...
+        </p>
+      </div>
+    );
 
   return (
     <div className="container mt-5" style={{ color: "#0b2e14" }}>
