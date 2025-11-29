@@ -2,10 +2,13 @@ import React, { useState, useContext, useEffect } from "react";
 import api, { initCsrf } from "../api/axiosConfig";
 import { useNavigate } from "react-router-dom";
 import { UserContext } from "../context/UserContext";
+import { PuffLoader } from "react-spinners";
+
 
 function Login() {
   const navigate = useNavigate();
   const { loginUser } = useContext(UserContext);
+  const [loading, setLoading] = useState(false);
   const [formData, setFormData] = useState({ email: "", password: "" });
   const [error, setError] = useState("");
   const [message, setMessage] = useState("");
@@ -28,6 +31,7 @@ function Login() {
     e.preventDefault();
     setError("");
     setMessage("");
+    setLoading(true);
 
     try {
       const res = await api.post("/users/login/", formData, {
@@ -43,12 +47,8 @@ function Login() {
         student_document: res.data.student_document,
       };
 
-      // ✅ Sauvegarde en cookie
-      document.cookie = `userData=${encodeURIComponent(
-        JSON.stringify(userData)
-      )}; path=/; max-age=${60 * 60 * 24 * 7}; SameSite=Lax;`;
+      document.cookie = `userData=${encodeURIComponent(JSON.stringify(userData))}; path=/; max-age=${60 * 60 * 24 * 7}; SameSite=Lax;`;
 
-      // ✅ Mise à jour du contexte utilisateur
       loginUser(userData);
 
       setMessage("✅ Connexion réussie !");
@@ -56,8 +56,11 @@ function Login() {
     } catch (err) {
       console.error("Erreur login :", err);
       setError("❌ Email ou mot de passe incorrect.");
+    } finally {
+      setLoading(false);
     }
   };
+
 
   return (
     <div
@@ -184,6 +187,25 @@ function Login() {
           </span>
         </p>
       </form>
+      {loading && (
+        <div
+          style={{
+            position: "fixed",
+            top: 0,
+            left: 0,
+            width: "100%",
+            height: "100%",
+            backgroundColor: "rgba(255,255,255,0.7)",
+            display: "flex",
+            justifyContent: "center",
+            alignItems: "center",
+            zIndex: 9999,
+          }}
+        >
+          <PuffLoader color="#0b2e14" size={80} />
+        </div>
+      )}
+
     </div>
   );
 }

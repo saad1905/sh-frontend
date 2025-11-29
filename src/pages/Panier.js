@@ -2,6 +2,8 @@ import React, { useEffect, useState } from "react";
 import { fetchCart, removeFromCart, createPayPalOrder, capturePayPalOrder } from "../api/APIServices";
 import { PayPalScriptProvider, PayPalButtons } from "@paypal/react-paypal-js";
 import { Trash2 } from "lucide-react";
+import { PuffLoader } from "react-spinners";
+
 
 function Panier() {
   const [cart, setCart] = useState(null);
@@ -101,7 +103,33 @@ function Panier() {
   };
 
   // 🔹 États visuels
-  if (loading) return <p className="text-center mt-5">Chargement du panier...</p>;
+  if (loading)
+    return (
+      <div
+        style={{
+          position: "fixed",
+          top: 0,
+          left: 0,
+          width: "100%",
+          height: "100%",
+          backgroundColor: "rgba(255,255,255,0.7)",
+          display: "flex",
+          flexDirection: "column",
+          justifyContent: "center",
+          alignItems: "center",
+          zIndex: 9999,
+        }}
+      >
+        <PuffLoader color="#0b2e14" size={80} />
+        <p
+          className="mt-3 fw-semibold"
+          style={{ color: "#0b2e14", fontSize: "1.1rem" }}
+        >
+          Chargement des meubles...
+        </p>
+      </div>
+    );
+
   if (!cart || cart.items.length === 0)
     return (
       <div className="text-center mt-5">

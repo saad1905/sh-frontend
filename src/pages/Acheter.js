@@ -3,6 +3,8 @@ import { useNavigate } from "react-router-dom";
 import api from "../api/axiosConfig";
 import { ShoppingCart } from "lucide-react";
 import { addToCart } from "../api/APIServices";
+import { PuffLoader } from "react-spinners";
+
 
 function Acheter() {
   const [items, setItems] = useState([]);
@@ -59,11 +61,31 @@ function Acheter() {
 
   if (loading)
     return (
-      <div className="text-center mt-5">
-        <div className="spinner-border text-success" role="status"></div>
-        <p className="mt-2 fw-semibold">Chargement des meubles...</p>
+      <div
+        style={{
+          position: "fixed",
+          top: 0,
+          left: 0,
+          width: "100%",
+          height: "100%",
+          backgroundColor: "rgba(255,255,255,0.7)",
+          display: "flex",
+          flexDirection: "column",
+          justifyContent: "center",
+          alignItems: "center",
+          zIndex: 9999,
+        }}
+      >
+        <PuffLoader color="#0b2e14" size={80} />
+        <p
+          className="mt-3 fw-semibold"
+          style={{ color: "#0b2e14", fontSize: "1.1rem" }}
+        >
+          Chargement des meubles...
+        </p>
       </div>
     );
+
 
   if (error)
     return <div className="alert alert-danger text-center mt-4">{error}</div>;
