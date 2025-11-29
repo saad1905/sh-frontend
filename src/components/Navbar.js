@@ -103,8 +103,8 @@ function Navbar() {
             to="/login"
             className="btn btn-sm"
             style={{
-              border: "1px solid #d4d4d4",
-              color: "#d4d4d4",
+              border: "1px solid #f4f4f4",
+              color: "#f4f4f4",
               fontWeight: "500",
               padding: "5px 10px",
             }}
