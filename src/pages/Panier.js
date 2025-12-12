@@ -1,8 +1,97 @@
 import React, { useEffect, useState } from "react";
-import { fetchCart, removeFromCart, createPayPalOrder, capturePayPalOrder } from "../api/APIServices";
+import { fetchCart, removeFromCart, createPayPalOrder, capturePayPalOrder, createStripePayment, confirmStripePayment } from "../api/APIServices";
 import { PayPalScriptProvider, PayPalButtons } from "@paypal/react-paypal-js";
 import { Trash2 } from "lucide-react";
 import { PuffLoader } from "react-spinners";
+import { loadStripe } from "@stripe/stripe-js";
+import {
+  Elements,
+  CardElement,
+  useStripe,
+  useElements,
+} from "@stripe/react-stripe-js";
+
+function StripeCheckout({ amount, onSuccess }) {
+  const stripe = useStripe();
+  const elements = useElements();
+  const [loading, setLoading] = useState(false);
+
+  const getUserData = () => {
+    const cookie = document.cookie
+      .split("; ")
+      .find((r) => r.startsWith("userData="));
+    return cookie ? JSON.parse(decodeURIComponent(cookie.split("=")[1])) : null;
+  };
+
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+    setLoading(true);
+
+    try {
+      const user = getUserData();
+
+      const { client_secret } = await createStripePayment(
+        user.email,
+        amount
+      );
+
+      const result = await stripe.confirmCardPayment(client_secret, {
+        payment_method: {
+          card: elements.getElement(CardElement),
+        },
+      });
+
+      if (result.error) {
+        alert(result.error.message);
+        return;
+      }
+
+      if (result.paymentIntent.status === "succeeded") {
+        await confirmStripePayment(result.paymentIntent.id);
+        alert("✅ Paiement par carte réussi !");
+        onSuccess();
+      }
+    } catch (err) {
+      console.error(err);
+      alert("❌ Erreur paiement Stripe");
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  return (
+    <form
+      onSubmit={handleSubmit}
+      style={{ maxWidth: 400, margin: "20px auto" }}
+    >
+      <CardElement
+  options={{
+    style: {
+      base: {
+        fontSize: "16px",
+        color: "#0b2e14",
+        fontFamily: "Arial, sans-serif",
+        "::placeholder": {
+          color: "#9ca3af",
+        },
+      },
+      invalid: {
+        color: "#dc2626",
+      },
+    },
+    hidePostalCode: true,
+  }}
+/>
+
+      <button
+        className="btn btn-success w-100 mt-3"
+        disabled={!stripe || loading}
+      >
+        {loading ? "Paiement..." : "Payer par carte bancaire"}
+      </button>
+    </form>
+  );
+}
 
 
 function Panier() {
@@ -11,6 +100,8 @@ function Panier() {
   const [message, setMessage] = useState("");
   const [currentIndexes, setCurrentIndexes] = useState({});
   const [paymentSuccess, setPaymentSuccess] = useState(false);
+  const stripePromise = loadStripe("pk_test_51SdVmRH3kUkgUmtY99cMntxH1lXsGHbJEyiYp7rd1s1bmoOxA8i6aYYWh1DARPWyNzliYW05BmRzmRWFE86fiFWF00VhQzyffR");
+
 
   // 🔹 Récupérer l'utilisateur connecté
   const getUserData = () => {
@@ -35,6 +126,9 @@ function Panier() {
       setLoading(false);
     }
   };
+
+
+
 
   useEffect(() => {
     loadCart();
@@ -285,37 +379,47 @@ function Panier() {
         })}
 
         {/* 💰 Total + Paiement */}
-        <div className="text-center mt-4">
-          <h5 className="fw-bold">
-            Total :{" "}
-            <span style={{ color: "#145c2c", fontWeight: "700" }}>
-              {cart.total_price} DH
-            </span> 
-          </h5>
+          <div className="text-center mt-4">
+            <h5 className="fw-bold">
+              Total :{" "}
+              <span style={{ color: "#145c2c", fontWeight: "700" }}>
+                {cart.total_price} DH
+              </span>
+            </h5>
 
-          {/* 🪙 PayPal Button */}
-          <div className="mt-3 d-flex justify-content-center">
-            <PayPalScriptProvider
-              options={{
-                "client-id": "ATol-P7H3Er4lG8CxaZDhKlL55rEA8t_l4Lpt4nYaMSiInxjavSQG4hyAST3YI4p89e4Vj2DTUaEg2sZ", // 🔑 à remplacer
-                currency: "USD",
-              }}
-            >
-              <PayPalButtons
-                style={{ layout: "horizontal", color: "gold" }}
-                createOrder={handleCreateOrder}
-                onApprove={(data) => handleApprove(data)}
+            {/* 💳 STRIPE */}
+            <Elements stripe={stripePromise}>
+              <StripeCheckout
+                amount={cart.total_price}
+                onSuccess={() => setPaymentSuccess(true)}
               />
-            </PayPalScriptProvider>
+            </Elements>
+
+            {/* 🪙 PAYPAL */}
+            <div className="mt-3 d-flex justify-content-center">
+              <PayPalScriptProvider
+                options={{
+                  "client-id": "ATol-P7H3Er4lG8CxaZDhKlL55rEA8t_l4Lpt4nYaMSiInxjavSQG4hyAST3YI4p89e4Vj2DTUaEg2sZ",
+                  currency: "USD",
+                }}
+              >
+                <PayPalButtons
+                  style={{ layout: "horizontal", color: "gold" }}
+                  createOrder={handleCreateOrder}
+                  onApprove={(data) => handleApprove(data)}
+                />
+              </PayPalScriptProvider>
+            </div>
+
+            {paymentSuccess && (
+              <div className="alert alert-success mt-3">
+                ✅ Paiement effectué avec succès !
+              </div>
+            )}
           </div>
 
-          {paymentSuccess && (
-            <div className="alert alert-success mt-3" role="alert">
-              ✅ Paiement effectué avec succès !
-            </div>
-          )}
-        </div>
       </div>
+      
     </div>
   );
 }

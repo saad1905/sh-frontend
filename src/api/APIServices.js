@@ -39,3 +39,36 @@ export const capturePayPalOrder = async (order_id) => {
     throw error;
   }
 };
+
+// 🔹 Créer un paiement Stripe (PaymentIntent)
+export const createStripePayment = async (email, amount) => {
+  try {
+    const response = await api.post("/payments/create-payment-stripe/", {
+      email,
+      amount,
+    });
+    return response.data; // { client_secret, payment_id, amount_mad, amount_usd }
+  } catch (error) {
+    console.error(
+      "Erreur création paiement Stripe :",
+      error.response?.data || error
+    );
+    throw error;
+  }
+};
+
+// 🔹 Confirmer le paiement Stripe (après succès frontend)
+export const confirmStripePayment = async (payment_intent_id) => {
+  try {
+    const response = await api.post("/payments/confirm-stripe-payment/", {
+      payment_intent_id,
+    });
+    return response.data; // message + payment
+  } catch (error) {
+    console.error(
+      "Erreur confirmation paiement Stripe :",
+      error.response?.data || error
+    );
+    throw error;
+  }
+};
